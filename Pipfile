@@ -12,9 +12,13 @@ wheel = "*"
 twine = "*"
 sphinx = "*"
 coverage = "*"
-django-otp-twilio = {editable = true,path = "."}
+doc8 = "*"
+tox = "*"
+mypy = "*"
+django-otp-messagebird = {editable = true,path = "."}
 
 [packages]
+messagebird = "*"
 
 [requires]
 python_version = "3.7"

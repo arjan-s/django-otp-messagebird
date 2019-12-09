@@ -10,14 +10,14 @@ class Settings(object):
     instance will contain all of our settings as attributes, with default
     values if they are not specified by the configuration.
     """
+
     _defaults = {
-        'OTP_TWILIO_ACCOUNT': None,
-        'OTP_TWILIO_AUTH': None,
-        'OTP_TWILIO_CHALLENGE_MESSAGE': "Sent by SMS",
-        'OTP_TWILIO_FROM': None,
-        'OTP_TWILIO_NO_DELIVERY': False,
-        'OTP_TWILIO_TOKEN_TEMPLATE': '{token}',
-        'OTP_TWILIO_TOKEN_VALIDITY': 30,
+        "OTP_MESSAGEBIRD_ACCESS_KEY": None,
+        "OTP_MESSAGEBIRD_CHALLENGE_MESSAGE": "Sent by SMS",
+        "OTP_MESSAGEBIRD_FROM": None,
+        "OTP_MESSAGEBIRD_NO_DELIVERY": False,
+        "OTP_MESSAGEBIRD_TOKEN_TEMPLATE": "{token}",
+        "OTP_MESSAGEBIRD_TOKEN_VALIDITY": 30,
     }
 
     def __getattr__(self, name):

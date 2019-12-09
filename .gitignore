@@ -4,3 +4,6 @@
 /dist/
 /docs/build/
 *.egg-info/
+.mypy_cache/
+.tox/
+.vscode/
