@@ -1,3 +1,10 @@
+v0.1.1 - December 12, 2019 - Missing dependency
+---------------------------------------
+
+Added missing dependency messagebird.
+Fixed source link badge in readme.
+
+
 v0.1.0 - December 9, 2019 - Initial release
 ---------------------------------------
 
