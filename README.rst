@@ -2,7 +2,7 @@
    :target: https://pypi.org/project/django-otp-messagebird/
    :alt: PyPI
 .. image:: https://img.shields.io/badge/github-django--otp--messagebird-green
-   :target: https://github.com/django-otp/django-otp-messagebird
+   :target: https://github.com/arjan-s/django-otp-messagebird
    :alt: Source
 
 This is a django-otp plugin that delivers tokens via MessageBird's `SMS
