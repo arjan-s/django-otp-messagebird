@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="django-otp-messagebird",
-    version="0.1.1",
+    version="0.1.2",
     description="A django-otp plugin that delivers tokens via MessageBird's SMS service.",
     author="arjan5",
     author_email="arjan.schrijver@foxcrypto.com",
@@ -17,8 +17,8 @@ setup(
     license="BSD",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Topic :: Security",
@@ -27,5 +27,5 @@ setup(
     ],
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    install_requires=["django-otp >= 0.5.0", "messagebird"],
+    install_requires=["django-otp >= 0.8.0", "messagebird"],
 )
