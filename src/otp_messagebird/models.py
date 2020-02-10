@@ -84,14 +84,20 @@ class MessageBirdSMSDevice(Device):
         """
         totp = self.totp_obj()
         token = format(totp.token(), "06d")
-        message = settings.OTP_MESSAGEBIRD_TOKEN_TEMPLATE.format(token=token)
+        token_template = getattr(settings, "OTP_MESSAGEBIRD_TOKEN_TEMPLATE", None)
+        if callable(token_template):
+            token_template = token_template(self)
+        message = token_template.format(token=token)
 
         if settings.OTP_MESSAGEBIRD_NO_DELIVERY:
             logger.info(message)
         else:
             self._deliver_token(message)
 
-        challenge = settings.OTP_MESSAGEBIRD_CHALLENGE_MESSAGE.format(token=token)
+        challenge_message = getattr(settings, "OTP_MESSAGEBIRD_CHALLENGE_MESSAGE", None)
+        if callable(challenge_message):
+            challenge_message = challenge_message(self)
+        challenge = challenge_message.format(token=token)
 
         return challenge
 

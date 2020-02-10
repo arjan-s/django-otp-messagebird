@@ -16,8 +16,10 @@ from .conf import settings
 class TestMessageBirdSMS(TestCase):
     def setUp(self):
         try:
-            self.alice = self.create_user("alice", "password")
-            self.bob = self.create_user("bob", "password")
+            self.alice = self.create_user(
+                "alice", "password", email="alice@example.com"
+            )
+            self.bob = self.create_user("bob", "password", email="bob@example.com")
         except IntegrityError:
             self.skipTest("Unable to create test users.")
         else:
@@ -109,6 +111,22 @@ class TestMessageBirdSMS(TestCase):
         ):
             device.generate_challenge()
         match = re.match(r"^Token is (\d{6})$", self._delivered)
+
+        self.assertIsNotNone(match)
+        self.assertTrue(device.verify_token(match.group(1)))
+
+    @override_settings(
+        OTP_MESSAGEBIRD_NO_DELIVERY=False,
+        OTP_MESSAGEBIRD_TOKEN_TEMPLATE=lambda d: d.user.email + " {token}",
+    )
+    def test_format_method(self):
+        device = self.alice.messagebirdsmsdevice_set.get()
+        with self._patch(
+            "otp_messagebird.models.MessageBirdSMSDevice._deliver_token",
+            self._deliver_token,
+        ):
+            device.generate_challenge()
+        match = re.match(r"^alice@example.com (\d{6})$", self._delivered)
 
         self.assertIsNotNone(match)
         self.assertTrue(device.verify_token(match.group(1)))
