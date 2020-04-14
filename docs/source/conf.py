@@ -54,7 +54,7 @@ django.conf.settings.configure(
         'django.contrib.messages',
 
         'django_otp',
-        'otp_twilio',
+        'otp_messagebird',
     ]
 )
 django.setup()
@@ -79,8 +79,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'django-otp-twilio'
-copyright = u'2012, Peter Sagerson'
+project = u'django-otp-messagebird'
+copyright = u'2020, Arjan Schrijver'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -203,7 +203,7 @@ html_theme = 'default'
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'django-otp-twiliodoc'
+htmlhelp_basename = 'django-otp-messagebirddoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -222,8 +222,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'django-otp-twilio.tex', u'django-otp-twilio Documentation',
-     'Peter Sagerson', 'manual'),
+    ('index', 'django-otp-messagebird.tex', u'django-otp-messagebird Documentation',
+     'Arjan Schrijver', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -252,8 +252,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'django-otp-twilio', u'django-otp-twilio Documentation',
-     [u'Peter Sagerson'], 1)
+    ('index', 'django-otp-messagebird', u'django-otp-messagebird Documentation',
+     [u'Arjan Schrijver'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -266,8 +266,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'django-otp-twilio', u'django-otp-twilio Documentation',
-     'Peter Sagerson', 'django-otp-twilio', 'One line description of project.',
+    ('index', 'django-otp-messagebird', u'django-otp-messagebird Documentation',
+     'Arjan Schrijver', 'django-otp-messagebird', 'One line description of project.',
      'Miscellaneous'),
 ]
 

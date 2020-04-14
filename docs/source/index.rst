@@ -1,4 +1,4 @@
-django-otp-twilio
+django-otp-messagebird
 =================
 
 .. include:: ../../README.rst
@@ -7,9 +7,9 @@ django-otp-twilio
 Installation
 ------------
 
-django-otp-twilio can be installed via pip::
+django-otp-messagebird can be installed via pip::
 
-    pip install django-otp-twilio
+    pip install django-otp-messagebird
 
 
 Once installed it should be added to INSTALLED_APPS after django_otp core::
@@ -21,14 +21,14 @@ Once installed it should be added to INSTALLED_APPS after django_otp core::
         'django_otp.plugins.otp_hotp',
         'django_otp.plugins.otp_static',
 
-        'otp_twilio',
+        'otp_messagebird',
     ]
 
 
-Twilio SMS Devices
+MessageBird SMS Devices
 ------------------
 
-.. autoclass:: otp_twilio.models.TwilioSMSDevice
+.. autoclass:: otp_messageBird.models.MessageBirdSMSDevice
     :members:
 
 
@@ -39,66 +39,56 @@ The following :class:`~django.contrib.admin.ModelAdmin` subclass is registered
 with the default admin site. We recommend its use with custom admin sites as
 well:
 
-.. autoclass:: otp_twilio.admin.TwilioSMSDeviceAdmin
+.. autoclass:: otp_messagebird.admin.MessageBirdSMSDeviceAdmin
 
 
 Settings
 --------
 
-.. setting:: OTP_TWILIO_ACCOUNT
+.. setting:: OTP_MESSAGEBIRD_ACCESS_KEY
 
-**OTP_TWILIO_ACCOUNT**
-
-Default: ``None``
-
-Your Twilio account ID.
-
-
-.. setting:: OTP_TWILIO_AUTH
-
-**OTP_TWILIO_AUTH**
+**OTP_MESSAGEBIRD_ACCESS_KEY**
 
 Default: ``None``
 
-Your Twilio auth token.
+Your MessageBird API key.
 
 
-.. setting:: OTP_TWILIO_CHALLENGE_MESSAGE
+.. setting:: OTP_MESSAGEBIRD_CHALLENGE_MESSAGE
 
-**OTP_TWILIO_CHALLENGE_MESSAGE**
+**OTP_MESSAGEBIRD_CHALLENGE_MESSAGE**
 
 Default: ``"Sent by SMS"``
 
 The message returned by
-:meth:`~otp_twilio.models.TwilioSMSDevice.generate_challenge`. This may contain
+:meth:`~otp_messagebird.models.MessageBirdSMSDevice.generate_challenge`. This may contain
 ``'{token}'``, which will be replaced by the token. This completely negates any
 security benefit to the device, but it's handy for development, especially in
-combination with :setting:`OTP_TWILIO_NO_DELIVERY`.
+combination with :setting:`OTP_MESSAGEBIRD_NO_DELIVERY`.
 
 
-.. setting:: OTP_TWILIO_FROM
+.. setting:: OTP_MESSAGEBIRD_FROM
 
-**OTP_TWILIO_FROM**
+**OTP_MESSAGEBIRD_FROM**
 
 Default: ``None``
 
-The phone number to send SMS messages from. This must be one of your Twilio
-numbers.
+A string containing the sender of the SMS, with a maximum length of 11 characters.
 
 
-.. setting:: OTP_TWILIO_NO_DELIVERY
+.. setting:: OTP_MESSAGEBIRD_NO_DELIVERY
 
-**OTP_TWILIO_NO_DELIVERY**
+**OTP_MESSAGEBIRD_NO_DELIVERY**
 
 Default: ``False``
 
-Send tokens to the 'otp_twilio.models' logger instead of delivering them by SMS.
+Send tokens to the 'otp_messagebird.models' logger instead of delivering them by SMS.
 Useful for development.
 
 
-.. setting:: OTP_TWILIO_TOKEN_TEMPLATE
+.. setting:: OTP_MESSAGEBIRD_TOKEN_TEMPLATE
 
-**OTP_TWILIO_TOKEN_TEMPLATE**
+**OTP_MESSAGEBIRD_TOKEN_TEMPLATE**
 
 Default: ``"{token}"``
 
@@ -107,9 +97,9 @@ token itself, but you can customize it. The template will be rendered with
 Python string formatting (``template.format(token=token)``).
 
 
-.. setting:: OTP_TWILIO_TOKEN_VALIDITY
+.. setting:: OTP_MESSAGEBIRD_TOKEN_VALIDITY
 
-**OTP_TWILIO_TOKEN_VALIDITY**
+**OTP_MESSAGEBIRD_TOKEN_VALIDITY**
 
 Default: ``30``
 
