@@ -1,15 +1,12 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from binascii import unhexlify
 import logging
-import time
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.utils.encoding import force_text
 
-from django_otp.models import Device
-from django_otp.oath import TOTP
+from django_otp.models import SideChannelDevice
 from django_otp.util import hex_validator, random_hex
 import messagebird
 
@@ -20,20 +17,22 @@ logger = logging.getLogger(__name__)
 
 
 def default_key():
+    """ Obsolete code here for migrations. """
     return force_text(random_hex(20))
 
 
 def key_validator(value):
+    """ Obsolete code here for migrations. """
     return hex_validator(20)(value)
 
 
-class MessageBirdSMSDevice(Device):
+class MessageBirdSMSDevice(SideChannelDevice):
     """
-    A :class:`~django_otp.models.Device` that delivers codes via the MessageBird SMS
-    service. This uses TOTP to generate temporary tokens, which are valid for
-    :setting:`OTP_MESSAGEBIRD_TOKEN_VALIDITY` seconds. Once a given token has been
-    accepted, it is no longer valid, nor is any other token generated at an
-    earlier time.
+    A :class:`~django_otp.models.SideChannelDevice` that delivers codes via the
+    MessageBird SMS service.
+
+    The tokens are valid for :setting:`OTP_MESSAGEBIRD_TOKEN_VALIDITY` seconds.
+    Once a token has been accepted, it is no longer valid.
 
     .. attribute:: number
 
@@ -41,53 +40,29 @@ class MessageBirdSMSDevice(Device):
         using the `E.164 <http://en.wikipedia.org/wiki/E.164>`_ format. For US numbers,
         this would look like '+15555555555'.
 
-    .. attribute:: key
-
-        *CharField*: The secret key used to generate TOTP tokens.
-
-    .. attribute:: last_t
-
-        *BigIntegerField*: The t value of the latest verified token.
-
     """
 
     number = models.CharField(
         max_length=30, help_text="The mobile number to deliver tokens to (E.164)."
     )
 
-    key = models.CharField(
-        max_length=40,
-        validators=[key_validator],
-        default=default_key,
-        help_text="A random key used to generate tokens (hex-encoded).",
-    )
-
-    last_t = models.BigIntegerField(
-        default=-1,
-        help_text="The t value of the latest verified token. The next token must be at a higher time step.",
-    )
-
-    class Meta(Device.Meta):
+    class Meta(SideChannelDevice.Meta):
         verbose_name = "MessageBird SMS Device"
-
-    @property
-    def bin_key(self):
-        return unhexlify(self.key.encode())
 
     def generate_challenge(self):
         """
-        Sends the current TOTP token to ``self.number``.
+        Generates a random token and sends it to ``self.number``.
 
         :returns: :setting:`OTP_MESSAGEBIRD_CHALLENGE_MESSAGE` on success.
         :raises: Exception if delivery fails.
 
         """
-        totp = self.totp_obj()
-        token = format(totp.token(), "06d")
+        self.generate_token(valid_secs=settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY)
+
         token_template = getattr(settings, "OTP_MESSAGEBIRD_TOKEN_TEMPLATE", None)
         if callable(token_template):
             token_template = token_template(self)
-        message = token_template.format(token=token)
+        message = token_template.format(token=self.token)
 
         if settings.OTP_MESSAGEBIRD_NO_DELIVERY:
             logger.info(message)
@@ -97,7 +72,7 @@ class MessageBirdSMSDevice(Device):
         challenge_message = getattr(settings, "OTP_MESSAGEBIRD_CHALLENGE_MESSAGE", None)
         if callable(challenge_message):
             challenge_message = challenge_message(self)
-        challenge = challenge_message.format(token=token)
+        challenge = challenge_message.format(token=self.token)
 
         return challenge
 
@@ -125,31 +100,3 @@ class MessageBirdSMSDevice(Device):
             raise ImproperlyConfigured(
                 "OTP_MESSAGEBIRD_FROM must be set to one of your MessageBird phone numbers or a string"
             )
-
-    def verify_token(self, token):
-        try:
-            token = int(token)
-        except Exception:
-            verified = False
-        else:
-            totp = self.totp_obj()
-            tolerance = settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY
-
-            for offset in range(-tolerance, 1):
-                totp.drift = offset
-                if (totp.t() > self.last_t) and (totp.token() == token):
-                    self.last_t = totp.t()
-                    self.save()
-
-                    verified = True
-                    break
-            else:
-                verified = False
-
-        return verified
-
-    def totp_obj(self):
-        totp = TOTP(self.bin_key, step=1)
-        totp.time = time.time()
-
-        return totp

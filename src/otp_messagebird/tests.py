@@ -1,11 +1,12 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
+from datetime import timedelta
 import re
 
 from django.db import IntegrityError
 from django.test.utils import override_settings
 
 from django_otp.tests import TestCase
+
+from freezegun import freeze_time
 
 from .conf import settings
 
@@ -23,79 +24,49 @@ class TestMessageBirdSMS(TestCase):
         except IntegrityError:
             self.skipTest("Unable to create test users.")
         else:
-            self.alice.messagebirdsmsdevice_set.create(
-                number="test", key="01234567890123456789"
-            )
-            self.bob.messagebirdsmsdevice_set.create(
-                number="test", key="98765432109876543210"
-            )
+            self.alice.messagebirdsmsdevice_set.create(number="test")
+            self.bob.messagebirdsmsdevice_set.create(number="test")
 
-        self._now = 1420099200
         self._delivered = None
 
     def test_instant(self):
         """ Verify a code the instant it was generated. """
         device = self.alice.messagebirdsmsdevice_set.get()
-        with self.with_time(self._now):
-            token = device.generate_challenge()
-            ok = device.verify_token(token)
-
-        self.assertTrue(ok)
-
-    def test_default_key(self):
-        device = self.alice.messagebirdsmsdevice_set.create(number="test")
-        with self.with_time(self._now):
-            token = device.generate_challenge()
-            ok = device.verify_token(token)
+        token = device.generate_challenge()
+        ok = device.verify_token(token)
 
         self.assertTrue(ok)
 
     def test_barely_made_it(self):
         """ Verify a code at the last possible second. """
         device = self.alice.messagebirdsmsdevice_set.get()
-        with self.with_time(self._now):
+        with freeze_time() as frozen_time:
             token = device.generate_challenge()
-        with self.with_time(self._now + settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY):
-            ok = device.verify_token(token)
-
-        self.assertTrue(ok)
+            frozen_time.tick(delta=timedelta(seconds=settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY - 1))
+            self.assertTrue(device.verify_token(token))
 
     def test_too_late(self):
         """ Try to verify a code one second after it expires. """
         device = self.alice.messagebirdsmsdevice_set.get()
-        with self.with_time(self._now):
+        with freeze_time() as frozen_time:
             token = device.generate_challenge()
-        with self.with_time(self._now + settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY + 1):
-            ok = device.verify_token(token)
-
-        self.assertFalse(ok)
-
-    def test_future(self):
-        """ Try to verify a code from the future. """
-        device = self.alice.messagebirdsmsdevice_set.get()
-        with self.with_time(self._now + 1):
-            token = device.generate_challenge()
-        with self.with_time(self._now):
-            ok = device.verify_token(token)
-
-        self.assertFalse(ok)
+            frozen_time.tick(delta=timedelta(seconds=settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY + 1))
+            self.assertFalse(device.verify_token(token))
 
     def test_code_reuse(self):
         """ Try to verify the same code twice. """
         device = self.alice.messagebirdsmsdevice_set.get()
-        with self.with_time(self._now):
-            token = device.generate_challenge()
-            ok1 = device.verify_token(token)
-            ok2 = device.verify_token(token)
+        token = device.generate_challenge()
+        ok1 = device.verify_token(token)
+        ok2 = device.verify_token(token)
 
         self.assertTrue(ok1)
         self.assertFalse(ok2)
 
     def test_cross_user(self):
         device = self.alice.messagebirdsmsdevice_set.get()
-        with self.with_time(self._now):
-            token = device.generate_challenge()
-            ok = self.bob.messagebirdsmsdevice_set.get().verify_token(token)
+        token = device.generate_challenge()
+        ok = self.bob.messagebirdsmsdevice_set.get().verify_token(token)
 
         self.assertFalse(ok)
 
@@ -137,9 +108,6 @@ class TestMessageBirdSMS(TestCase):
 
     def _deliver_token(self, token):
         self._delivered = token
-
-    def with_time(self, timestamp):
-        return self._patch("time.time", lambda: timestamp)
 
     def _patch(self, *args, **kwargs):
         try:

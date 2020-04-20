@@ -15,6 +15,7 @@ coverage = "*"
 doc8 = "*"
 tox = "*"
 mypy = "*"
+freezegun = "*"
 django-otp-messagebird = {editable = true,path = "."}
 
 [packages]
