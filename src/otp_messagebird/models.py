@@ -26,10 +26,11 @@ def key_validator(value):
     return hex_validator(20)(value)
 
 
-class MessageBirdSMSDevice(SideChannelDevice):
+class MessageBirdBaseDevice(SideChannelDevice):
     """
-    A :class:`~django_otp.models.SideChannelDevice` that delivers codes via the
-    MessageBird SMS service.
+    Abstract MessageBird base device that implements all required fields
+    and methods for :class:`~otp_messagebird.models.MessageBirdSMSDevice`
+    and :class:`~otp_messagebird.models.MessageBirdVoiceDevice`.
 
     The tokens are valid for :setting:`OTP_MESSAGEBIRD_TOKEN_VALIDITY` seconds.
     Once a token has been accepted, it is no longer valid.
@@ -41,13 +42,12 @@ class MessageBirdSMSDevice(SideChannelDevice):
         this would look like '+15555555555'.
 
     """
-
     number = models.CharField(
         max_length=30, help_text="The mobile number to deliver tokens to (E.164)."
     )
 
     class Meta(SideChannelDevice.Meta):
-        verbose_name = "MessageBird SMS Device"
+        abstract = True
 
     def generate_challenge(self):
         """
@@ -76,6 +76,28 @@ class MessageBirdSMSDevice(SideChannelDevice):
 
         return challenge
 
+    def _validate_config(self):
+        if settings.OTP_MESSAGEBIRD_ACCESS_KEY is None:
+            raise ImproperlyConfigured(
+                "OTP_MESSAGEBIRD_ACCESS_KEY must be set to your MessageBird access key"
+            )
+
+        if settings.OTP_MESSAGEBIRD_FROM is None:
+            raise ImproperlyConfigured(
+                "OTP_MESSAGEBIRD_FROM must be set to one of your MessageBird phone numbers or a string"
+            )
+
+
+class MessageBirdSMSDevice(MessageBirdBaseDevice):
+    """
+    A :class:`~otp_messagebird.models.MessageBirdBaseDevice` that delivers codes
+    via the MessageBird SMS service.
+
+    """
+
+    class Meta(MessageBirdBaseDevice.Meta):
+        verbose_name = "MessageBird SMS Device"
+
     def _deliver_token(self, token):
         self._validate_config()
 
@@ -90,13 +112,26 @@ class MessageBirdSMSDevice(SideChannelDevice):
             logger.exception("Error sending token by MessageBird SMS: {0}".format(e))
             raise
 
-    def _validate_config(self):
-        if settings.OTP_MESSAGEBIRD_ACCESS_KEY is None:
-            raise ImproperlyConfigured(
-                "OTP_MESSAGEBIRD_ACCESS_KEY must be set to your MessageBird access key"
-            )
 
-        if settings.OTP_MESSAGEBIRD_FROM is None:
-            raise ImproperlyConfigured(
-                "OTP_MESSAGEBIRD_FROM must be set to one of your MessageBird phone numbers or a string"
+class MessageBirdVoiceDevice(MessageBirdBaseDevice):
+    """
+    A :class:`~django_otp.models.SideChannelDevice` that delivers codes via the
+    MessageBird Voice service.
+
+    """
+
+    class Meta(MessageBirdBaseDevice.Meta):
+        verbose_name = "MessageBird Voice Device"
+
+    def _deliver_token(self, token):
+        self._validate_config()
+
+        client = messagebird.Client(settings.OTP_MESSAGEBIRD_ACCESS_KEY)
+        try:
+            client.voice_message_create(
+                recipients=self.number.replace("+", ""),
+                body=str(token),
             )
+        except messagebird.client.ErrorException as e:
+            logger.exception("Error sending token by MessageBird Voice: {0}".format(e))
+            raise
