@@ -27,5 +27,5 @@ setup(
     ],
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    install_requires=["django-otp >= 0.8.0", "messagebird"],
+    install_requires=["django-otp >= 0.9.0", "messagebird"],
 )
