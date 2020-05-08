@@ -14,7 +14,7 @@ class MessageBirdSMSDeviceAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ("Identity", {"fields": ["user", "name", "confirmed"], }),
-        ("Configuration", {"fields": ["number", "key"], }),
+        ("Configuration", {"fields": ["number"], }),
     ]
     raw_id_fields = ["user"]
 
