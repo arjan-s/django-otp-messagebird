@@ -54,14 +54,27 @@ Default: ``None``
 Your MessageBird API key.
 
 
-.. setting:: OTP_MESSAGEBIRD_CHALLENGE_MESSAGE
+.. setting:: OTP_MESSAGEBIRD_SMS_CHALLENGE_MESSAGE
 
-**OTP_MESSAGEBIRD_CHALLENGE_MESSAGE**
+**OTP_MESSAGEBIRD_SMS_CHALLENGE_MESSAGE**
 
 Default: ``"Sent by SMS"``
 
 The message returned by
 :meth:`~otp_messagebird.models.MessageBirdSMSDevice.generate_challenge`. This may contain
+``'{token}'``, which will be replaced by the token. This completely negates any
+security benefit to the device, but it's handy for development, especially in
+combination with :setting:`OTP_MESSAGEBIRD_NO_DELIVERY`.
+
+
+.. setting:: OTP_MESSAGEBIRD_VOICE_CHALLENGE_MESSAGE
+
+**OTP_MESSAGEBIRD_VOICE_CHALLENGE_MESSAGE**
+
+Default: ``"Phone call initiated"``
+
+The message returned by
+:meth:`~otp_messagebird.models.MessageBirdVoiceDevice.generate_challenge`. This may contain
 ``'{token}'``, which will be replaced by the token. This completely negates any
 security benefit to the device, but it's handy for development, especially in
 combination with :setting:`OTP_MESSAGEBIRD_NO_DELIVERY`.
@@ -86,13 +99,24 @@ Send tokens to the 'otp_messagebird.models' logger instead of delivering them by
 Useful for development.
 
 
-.. setting:: OTP_MESSAGEBIRD_TOKEN_TEMPLATE
+.. setting:: OTP_MESSAGEBIRD_SMS_TOKEN_TEMPLATE
 
-**OTP_MESSAGEBIRD_TOKEN_TEMPLATE**
+**OTP_MESSAGEBIRD_SMS_TOKEN_TEMPLATE**
 
 Default: ``"{token}"``
 
-A string template for generating the token message. By default, this is just the
+A string template for generating the token SMS message. By default, this is just the
+token itself, but you can customize it. The template will be rendered with
+Python string formatting (``template.format(token=token)``).
+
+
+.. setting:: OTP_MESSAGEBIRD_VOICE_TOKEN_TEMPLATE
+
+**OTP_MESSAGEBIRD_VOICE_TOKEN_TEMPLATE**
+
+Default: ``"{token}"``
+
+A string template for generating the token voice message. By default, this is just the
 token itself, but you can customize it. The template will be rendered with
 Python string formatting (``template.format(token=token)``).
 
