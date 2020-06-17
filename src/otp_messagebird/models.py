@@ -53,26 +53,20 @@ class MessageBirdBaseDevice(SideChannelDevice):
         """
         Generates a random token and sends it to ``self.number``.
 
-        :returns: :setting:`OTP_MESSAGEBIRD_CHALLENGE_MESSAGE` on success.
+        :returns: Challenge message on success.
         :raises: Exception if delivery fails.
 
         """
         self.generate_token(valid_secs=settings.OTP_MESSAGEBIRD_TOKEN_VALIDITY)
 
-        token_template = getattr(settings, "OTP_MESSAGEBIRD_TOKEN_TEMPLATE", None)
-        if callable(token_template):
-            token_template = token_template(self)
-        message = token_template.format(token=self.token)
+        message = self._get_token_message(self.token)
 
         if settings.OTP_MESSAGEBIRD_NO_DELIVERY:
             logger.info(message)
         else:
             self._deliver_token(message)
 
-        challenge_message = getattr(settings, "OTP_MESSAGEBIRD_CHALLENGE_MESSAGE", None)
-        if callable(challenge_message):
-            challenge_message = challenge_message(self)
-        challenge = challenge_message.format(token=self.token)
+        challenge = self.__get_challenge_message(self.token)
 
         return challenge
 
@@ -98,6 +92,20 @@ class MessageBirdSMSDevice(MessageBirdBaseDevice):
     class Meta(MessageBirdBaseDevice.Meta):
         verbose_name = "MessageBird SMS Device"
 
+    def _get_token_message(self, token):
+        token_template = getattr(settings, "OTP_MESSAGEBIRD_SMS_TOKEN_TEMPLATE", None)
+        if callable(token_template):
+            token_template = token_template(self)
+        message = token_template.format(token=self.token)
+        return message
+
+    def _get_challenge_message(self, token):
+        challenge_message = getattr(settings, "OTP_MESSAGEBIRD_SMS_CHALLENGE_MESSAGE", None)
+        if callable(challenge_message):
+            challenge_message = challenge_message(self)
+        challenge = challenge_message.format(token=token)
+        return challenge
+
     def _deliver_token(self, token):
         self._validate_config()
 
@@ -118,19 +126,52 @@ class MessageBirdVoiceDevice(MessageBirdBaseDevice):
     A :class:`~django_otp.models.SideChannelDevice` that delivers codes via the
     MessageBird Voice service.
 
+    .. attribute:: language
+
+        *CharField*: The language in which the message needs to be read to the recipient.
+
     """
+    language = models.CharField(
+        max_length=5,
+        help_text="The language in which the message needs to be read to the recipient. Possible values can be found here: https://developers.messagebird.com/api/voice-messaging/#the-voice-message-object",
+        default="en-us",
+    )
 
     class Meta(MessageBirdBaseDevice.Meta):
         verbose_name = "MessageBird Voice Device"
 
+    def _get_token_message(self, token):
+        token_template = getattr(settings, "OTP_MESSAGEBIRD_VOICE_TOKEN_TEMPLATE", None)
+        if callable(token_template):
+            token_template = token_template(self)
+        message = token_template.format(token=self.token)
+        return message
+
+    def _get_challenge_message(self, token):
+        challenge_message = getattr(settings, "OTP_MESSAGEBIRD_VOICE_CHALLENGE_MESSAGE", None)
+        if callable(challenge_message):
+            challenge_message = challenge_message(self)
+        challenge = challenge_message.format(token=token)
+        return challenge
+
     def _deliver_token(self, token):
         self._validate_config()
+
+        # If pure numeric token, split into separate numbers to improve the way it
+        # sounds on the phone and repeat it twice in case the user missed it
+        if token.isnumeric():
+            token = ", ".join(token) \
+                    + '<break time="2s"/>' \
+                    + ", ".join(token) \
+                    + '<break time="2s"/>' \
+                    + ", ".join(token)
 
         client = messagebird.Client(settings.OTP_MESSAGEBIRD_ACCESS_KEY)
         try:
             client.voice_message_create(
                 recipients=self.number.replace("+", ""),
                 body=str(token),
+                params={"language": self.language},
             )
         except messagebird.client.ErrorException as e:
             logger.exception("Error sending token by MessageBird Voice: {0}".format(e))

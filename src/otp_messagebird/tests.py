@@ -12,7 +12,7 @@ from .conf import settings
 
 
 @override_settings(
-    OTP_MESSAGEBIRD_NO_DELIVERY=True, OTP_MESSAGEBIRD_CHALLENGE_MESSAGE="{token}",
+    OTP_MESSAGEBIRD_NO_DELIVERY=True, OTP_MESSAGEBIRD_SMS_CHALLENGE_MESSAGE="{token}",
 )
 class TestMessageBirdSMS(TestCase):
     def setUp(self):
@@ -72,7 +72,7 @@ class TestMessageBirdSMS(TestCase):
 
     @override_settings(
         OTP_MESSAGEBIRD_NO_DELIVERY=False,
-        OTP_MESSAGEBIRD_TOKEN_TEMPLATE="Token is {token}",
+        OTP_MESSAGEBIRD_SMS_TOKEN_TEMPLATE="Token is {token}",
     )
     def test_format(self):
         device = self.alice.messagebirdsmsdevice_set.get()
@@ -88,7 +88,7 @@ class TestMessageBirdSMS(TestCase):
 
     @override_settings(
         OTP_MESSAGEBIRD_NO_DELIVERY=False,
-        OTP_MESSAGEBIRD_TOKEN_TEMPLATE=lambda d: d.user.email + " {token}",
+        OTP_MESSAGEBIRD_SMS_TOKEN_TEMPLATE=lambda d: d.user.email + " {token}",
     )
     def test_format_method(self):
         device = self.alice.messagebirdsmsdevice_set.get()
