@@ -66,7 +66,7 @@ class MessageBirdBaseDevice(SideChannelDevice):
         else:
             self._deliver_token(message)
 
-        challenge = self.__get_challenge_message(self.token)
+        challenge = self._get_challenge_message(self.token)
 
         return challenge
 
