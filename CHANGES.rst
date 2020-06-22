@@ -1,4 +1,11 @@
-v0.1.2 - February 10, 2020 - Dynamic settings
+v0.2.0 - june 17, 2020 - Voice device
+---------------------------------------------
+
+Add MessageBirdVoiceDevice which calls the user and reads the body to them.
+Rebased on SideChannelDevice from django-otp.
+
+
+v0.1.2 - february 10, 2020 - Dynamic settings
 ---------------------------------------------
 
 Made token template and challenge message dynamic, inspired by the same change
