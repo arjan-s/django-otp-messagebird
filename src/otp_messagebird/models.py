@@ -1,12 +1,10 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import logging
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.utils.encoding import force_text
 
-from django_otp.models import SideChannelDevice
+from django_otp.models import SideChannelDevice, ThrottlingMixin
 from django_otp.util import hex_validator, random_hex
 import messagebird
 
@@ -16,17 +14,17 @@ from .conf import settings
 logger = logging.getLogger(__name__)
 
 
-def default_key():
+def default_key():  # pragma: no cover
     """ Obsolete code here for migrations. """
     return force_text(random_hex(20))
 
 
-def key_validator(value):
+def key_validator(value):  # pragma: no cover
     """ Obsolete code here for migrations. """
     return hex_validator(20)(value)
 
 
-class MessageBirdBaseDevice(SideChannelDevice):
+class MessageBirdBaseDevice(ThrottlingMixin, SideChannelDevice):
     """
     Abstract MessageBird base device that implements all required fields
     and methods for :class:`~otp_messagebird.models.MessageBirdSMSDevice`
@@ -48,6 +46,9 @@ class MessageBirdBaseDevice(SideChannelDevice):
 
     class Meta(SideChannelDevice.Meta):
         abstract = True
+
+    def get_throttle_factor(self):
+        return settings.OTP_MESSAGEBIRD_THROTTLE_FACTOR
 
     def generate_challenge(self):
         """
@@ -80,6 +81,20 @@ class MessageBirdBaseDevice(SideChannelDevice):
             raise ImproperlyConfigured(
                 "OTP_MESSAGEBIRD_FROM must be set to one of your MessageBird phone numbers or a string"
             )
+
+    def verify_token(self, token):
+        verify_allowed, _ = self.verify_is_allowed()
+        if verify_allowed:
+            verified = super().verify_token(token)
+
+            if verified:
+                self.throttle_reset()
+            else:
+                self.throttle_increment()
+        else:
+            verified = False
+
+        return verified
 
 
 class MessageBirdSMSDevice(MessageBirdBaseDevice):

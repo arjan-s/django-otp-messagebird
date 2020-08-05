@@ -130,6 +130,17 @@ Default: ``30``
 The number of seconds for which a delivered token will be valid.
 
 
+.. setting:: OTP_MESSAGEBIRD_THROTTLE_FACTOR
+
+**OTP_MESSAGEBIRD_THROTTLE_FACTOR**
+
+Default: ``1``
+
+This controls the rate of throttling. The sequence of 1, 2, 4, 8... seconds is
+multiplied by this factor to define the delay imposed after 1, 2, 3, 4...
+successive failures. Set to ``0`` to disable throttling completely.
+
+
 Changes
 -------
 

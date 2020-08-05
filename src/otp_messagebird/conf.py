@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import django.conf
 import django.test.utils
 
@@ -20,6 +18,7 @@ class Settings(object):
         "OTP_MESSAGEBIRD_SMS_TOKEN_TEMPLATE": "{token}",
         "OTP_MESSAGEBIRD_VOICE_TOKEN_TEMPLATE": "{token}",
         "OTP_MESSAGEBIRD_TOKEN_VALIDITY": 30,
+        "OTP_MESSAGEBIRD_THROTTLE_FACTOR": 1,
     }
 
     def __getattr__(self, name):
