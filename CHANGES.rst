@@ -1,4 +1,4 @@
-Unreleased - Throttling
+v0.2.1 - August 05, 2020 - Throttling
 ---------------------------------------------
 
 Add token verification throttling to MessageBirdBaseDevice.

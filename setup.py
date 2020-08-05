@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="django-otp-messagebird",
-    version="0.2.0",
+    version="0.2.1",
     description="A django-otp plugin that delivers tokens via MessageBird's SMS service.",
     author="arjan5",
     author_email="arjan.schrijver@foxcrypto.com",
