@@ -1,3 +1,9 @@
+Unreleased - Django 4.0 compatibility
+---------------------------------------------
+
+Support Django 4.0 and above.
+
+
 v0.2.1 - August 05, 2020 - Throttling
 ---------------------------------------------
 
