@@ -1,4 +1,4 @@
-Unreleased - Django 4.0 compatibility
+v0.2.2 - September 22, 2025 - Django 4.0 compatibility
 ---------------------------------------------
 
 Support Django 4.0 and above.
